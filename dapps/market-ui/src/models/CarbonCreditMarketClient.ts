@@ -1,11 +1,11 @@
 import { SmartContractParameters, WalletApi } from '@concordium/browser-wallet-api-helpers';
 import {
-    AccountAddress, ConcordiumGRPCClient, ContractAddress, deserializeReceiveReturnValue,
-    TransactionStatusEnum, TransactionSummary
+  AccountAddress, BlockItemStatus, BlockItemSummaryInBlock, ConcordiumGRPCClient, ContractAddress, deserializeReceiveReturnValue, BlockItemSummary,
+  TransactionStatusEnum, TransactionSummary
 } from '@concordium/web-sdk';
 
 import {
-    ContractInfo, invokeContract, ParamContractAddress, toParamContractAddress, updateContract
+  ContractInfo, invokeContract, ParamContractAddress, toParamContractAddress, updateContract
 } from './ConcordiumContractClient';
 
 export const enum MethodNames {
@@ -35,15 +35,15 @@ export async function list(
   );
   const tokens = retValueDe[0].map(
     (t: any) =>
-      ({
-        contract: t.contract,
-        owner: t.owner,
-        price: BigInt(t.price),
-        primaryOwner: t.primary_owner,
-        quantity: BigInt(t.quantity),
-        royalty: t.royalty,
-        tokenId: t.token_id,
-      } as TokenListItem),
+    ({
+      contract: t.contract,
+      owner: t.owner,
+      price: BigInt(t.price),
+      primaryOwner: t.primary_owner,
+      quantity: BigInt(t.quantity),
+      royalty: t.royalty,
+      tokenId: t.token_id,
+    } as TokenListItem),
   );
 
   return tokens;
@@ -71,12 +71,12 @@ export async function listOwned(
   );
   const tokens = retValueDe.map(
     (t: any) =>
-      ({
-        tokenId: t.token_id,
-        contract: t.contract,
-        owner: t.owner,
-        quantity: BigInt(t.quantity),
-      } as OwnedTokenListItem),
+    ({
+      tokenId: t.token_id,
+      contract: t.contract,
+      owner: t.owner,
+      quantity: BigInt(t.quantity),
+    } as OwnedTokenListItem),
   );
 
   return tokens;
@@ -100,7 +100,7 @@ export async function add(
   maxContractExecutionEnergy = BigInt(9999),
   onStatusUpdate: (status: TransactionStatusEnum, txnHash: string) => void = (status, txnHash) =>
     console.log(`txn #${txnHash}, status:${status}`),
-): Promise<{ txnHash: string; outcomes: Record<string, TransactionSummary> }> {
+): Promise<{ txnHash: string; outcomes: BlockItemSummary }> {
   return updateContract(
     provider,
     contractInfo,
@@ -152,7 +152,7 @@ export async function transfer({
   contractInfo: ContractInfo;
   maxContractExecutionEnergy?: bigint;
   onStatusUpdate?: (status: TransactionStatusEnum, txnHash: string) => void;
-}): Promise<{ txnHash: string; outcomes: Record<string, TransactionSummary> }> {
+}): Promise<{ txnHash: string; outcomes: BlockItemSummary }> {
   const paramJson: TransferParams = {
     cis_contract_address: toParamContractAddress(nftContractAddress),
     token_id: tokenId,
